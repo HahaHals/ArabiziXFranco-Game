@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Owner login · Franco{% endblock %}
+{% block body %}
+<main class="narrow">
+  <h1>Owner login</h1>
+  <form method="post" action="/owner/login" class="stack">
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <label>Username
+      <input name="username" value="{{ username or '' }}" autocomplete="username"
+             autocapitalize="none" spellcheck="false" required autofocus>
+    </label>
+    <label>Password
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit">Log in</button>
+  </form>
+</main>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Owner panel · Franco{% endblock %}
+{% block content %}
+<h1>Owner panel</h1>
+<div class="cards">
+  {% for s, (t, d, step) in sections.items() %}
+  <a class="card" href="/owner/{{ s }}">
+    <strong>{{ t }}</strong>
+    <span>{{ d }}</span>
+    <small class="muted">{% if s in built %}Ready{% else %}Coming in step {{ step }}{% endif %}</small>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

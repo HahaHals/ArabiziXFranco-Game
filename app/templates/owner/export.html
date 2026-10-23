@@ -1,0 +1,46 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Export · Franco{% endblock %}
+{% block content %}
+<h1>Export</h1>
+<p class="muted">Download the dataset. Player names and network addresses are never included. Answers you excluded, and answers on deleted sentences, are always left out.</p>
+
+<form method="get" class="stack panel-box export-form" id="export-form">
+  <fieldset class="reasons-pick">
+    <legend><strong>What</strong></legend>
+    <label><input type="radio" name="dataset" value="answers" checked>
+      <span><strong>Raw answers</strong> · one row per box a player filled in. The real dataset, for training.</span></label>
+    <label><input type="radio" name="dataset" value="variants">
+      <span><strong>Grouped spellings</strong> · one row per Arabic word and spelling, with how many people wrote it. For evaluation.</span></label>
+  </fieldset>
+  <fieldset class="reasons-pick">
+    <legend><strong>Format</strong></legend>
+    <label><input type="radio" name="fmt" value="csv" checked> <span><strong>CSV</strong> · opens in Excel or Google Sheets, Arabic included</span></label>
+    <label><input type="radio" name="fmt" value="jsonl"> <span><strong>JSONL</strong> · one JSON object per line, for code</span></label>
+  </fieldset>
+  <label class="check-row"><input type="checkbox" name="flagged" value="true">
+    <span>Include flagged answers you haven't reviewed <span class="muted">({{ with_flagged - clean_count }} of them)</span></span></label>
+  <label class="check-row" id="ts-row"><input type="checkbox" name="timestamps" value="true">
+    <span>Include when each answer was saved <span class="muted">(raw answers only)</span></span></label>
+  <p class="muted small-meta">{{ clean_count }} answers ready to export.</p>
+  <button type="submit">Download</button>
+</form>
+<script>
+  // Point the form at /owner/export/<dataset>.<fmt> so the file gets a proper name.
+  (() => {
+    const form = document.getElementById("export-form");
+    const sync = () => {
+      const d = form.querySelector("input[name=dataset]:checked").value;
+      const f = form.querySelector("input[name=fmt]:checked").value;
+      form.action = `/owner/export/${d}.${f}`;
+      document.getElementById("ts-row").hidden = d !== "answers";
+    };
+    form.addEventListener("change", sync);
+    form.addEventListener("submit", () => {
+      sync();
+      for (const name of ["dataset", "fmt"]) form.querySelectorAll(`input[name=${name}]`).forEach((i) => i.disabled = true);
+      setTimeout(() => form.querySelectorAll("input").forEach((i) => i.disabled = false), 0);
+    });
+    sync();
+  })();
+</script>
+{% endblock %}

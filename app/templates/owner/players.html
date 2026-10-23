@@ -1,0 +1,28 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Players · Franco{% endblock %}
+{% block content %}
+<h1>Players <small class="muted">({{ total }})</small></h1>
+{% if deleted %}<p class="notice" role="status">Deleted {{ deleted }} and all their answers.</p>{% endif %}
+<p class="muted">Players get a random ID the first time they open the game. Delete a junk player to remove everything they submitted.</p>
+{% if rows %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Player</th><th>Name</th><th class="num">Sentences</th><th class="num">Words</th><th>First seen</th><th></th></tr></thead>
+  <tbody>
+  {% for player, words, done in rows %}
+    <tr>
+      <td><code>{{ player.id }}</code></td>
+      <td>{{ player.display_name or "" }}</td>
+      <td class="num">{{ done }}</td>
+      <td class="num">{{ words }}</td>
+      <td class="muted">{{ player.created_at.strftime("%Y-%m-%d") }}</td>
+      <td><a href="/owner/players/{{ player.id }}/delete" class="danger-link">Delete…</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="muted">No players yet.</p>
+{% endif %}
+{% endblock %}

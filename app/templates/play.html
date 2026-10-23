@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Franco{% endblock %}
+{% block body %}
+<main class="play">
+  <section id="round" hidden>
+    <p class="sentence" lang="ar" dir="rtl" id="sentence"></p>
+    <p class="gloss" id="gloss"></p>
+    <p class="hint">Type each word in Franco · اكتب كل كلمة بالفرانكو</p>
+    <form id="answers" novalidate>
+      <div class="boxes" dir="rtl" id="boxes"></div>
+      <p class="error" id="form-error" role="alert" hidden></p>
+      <button type="submit" id="submit">Submit · ابعت</button>
+    </form>
+    <button type="button" class="report-open" id="report-open">Report this sentence · إبلاغ</button>
+    <form id="report" class="report-panel stack" novalidate hidden>
+      <h2>What's wrong with it? · فيها إيه؟</h2>
+      <fieldset class="reasons-pick">
+        <legend class="visually-hidden">Reason</legend>
+        <label><input type="radio" name="reason" value="misspelled"> Misspelled · فيها غلطة إملائية</label>
+        <label><input type="radio" name="reason" value="not_egyptian"> Not Egyptian Arabic · مش مصري</label>
+        <label><input type="radio" name="reason" value="inappropriate"> Inappropriate · مش لايقة</label>
+        <label><input type="radio" name="reason" value="not_understood"> I don't understand it · مش مفهومة</label>
+      </fieldset>
+      <label><span>Why is it wrong? <small class="muted">(optional) · ليه؟ (اختياري)</small></span>
+        <textarea name="comment" id="report-comment" rows="2" maxlength="500" dir="auto"></textarea>
+      </label>
+      <p class="error" id="report-error" role="alert" hidden></p>
+      <div class="row-actions">
+        <button type="submit" id="report-send">Send report · ابعت</button>
+        <button type="button" class="secondary" id="report-cancel">Cancel · إلغاء</button>
+      </div>
+      <p class="muted small-meta">This skips the sentence. Nothing you typed for it is saved.</p>
+    </form>
+  </section>
+  <section id="empty" class="center" hidden>
+    <p class="big" lang="ar" dir="rtl">خلصت كل الجمل دلوقتي، ارجع بعدين!</p>
+    <p>You've done all the sentences for now. Come back later!</p>
+  </section>
+  <section id="failed" class="center" hidden>
+    <p>Something went wrong loading the game.</p>
+    <button type="button" id="retry">Try again</button>
+  </section>
+  <div class="toast" id="toast" role="status" hidden>Saved · اتحفظ ✓</div>
+</main>
+<script src="{{ url_for('static', path='play.js') }}"></script>
+{% endblock %}

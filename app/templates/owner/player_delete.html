@@ -1,0 +1,10 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Delete player · Franco{% endblock %}
+{% block content %}
+<h1>Delete <code>{{ player.id }}</code>?</h1>
+<p>This removes the player and all {{ answers }} of their answers, plus their reports. It can't be undone.</p>
+<form method="post" action="/owner/players/{{ player.id }}/delete" class="row-actions">
+  <button type="submit" class="danger">Delete player and answers</button>
+  <a href="/owner/players">Cancel</a>
+</form>
+{% endblock %}

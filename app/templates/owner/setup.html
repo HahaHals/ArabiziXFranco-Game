@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Create owner account · Franco{% endblock %}
+{% block body %}
+<main class="narrow">
+  <h1>Create owner account</h1>
+  {% if not enabled %}
+    <p>There's no owner account yet, and first-time setup is switched off.</p>
+    <p class="muted">To switch it on, set <code>SETUP_CODE</code> on the server to a secret of at least
+      {{ min_length }} characters, then reload this page. Or create the account from the command line:
+      <code>python -m app.cli create-owner &lt;username&gt;</code>.</p>
+  {% else %}
+    <p class="muted">This page only works once. After the account is created, it's gone.</p>
+    <form method="post" action="/owner/setup" class="stack">
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <label>Setup code
+        <input name="setup_code" type="password" autocomplete="off" required autofocus>
+        <small class="muted">The SETUP_CODE you set on the server.</small>
+      </label>
+      <label>Username
+        <input name="username" value="{{ username }}" autocomplete="username"
+               autocapitalize="none" spellcheck="false" required>
+        <small class="muted">3–64 characters: letters, numbers, _ . -</small>
+      </label>
+      <label>Password
+        <input name="password" type="password" autocomplete="new-password" required>
+        <small class="muted">At least 10 characters. A few random words work well.</small>
+      </label>
+      <label>Repeat password
+        <input name="repeat" type="password" autocomplete="new-password" required>
+      </label>
+      <button type="submit">Create account and log in</button>
+    </form>
+  {% endif %}
+</main>
+{% endblock %}

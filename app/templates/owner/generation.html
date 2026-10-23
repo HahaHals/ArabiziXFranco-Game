@@ -1,0 +1,83 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Generation · Franco{% endblock %}
+{% block content %}
+<h1>Generation</h1>
+{% set messages = {
+  "started": "Generating a batch. It takes about a minute; refresh this page to see it.",
+  "busy": "A batch is already being generated.",
+  "setting": "Review setting saved.",
+  "approved": "Approved. It's in the game.",
+  "approved_all": "Batch approved. Its sentences are in the game.",
+  "deleted": "Deleted.",
+  "edited": "Saved. Approve it when it's ready.",
+} %}
+{% if done in messages %}<p class="notice" role="status">{{ messages[done] }}</p>{% endif %}
+
+<section class="panel-box stack">
+  <h2>Status</h2>
+  {% if not has_key %}
+    <p class="error">No Anthropic API key is set on the server, so Claude can't write sentences. Set <code>ANTHROPIC_API_KEY</code>. The game keeps working with the sentences you add yourself.</p>
+  {% endif %}
+  <dl class="facts">
+    <div><dt>Unseen sentences for a new player</dt><dd>{{ pool }}</dd></div>
+    <div><dt>New batch when this drops to</dt><dd>{{ settings.pool_threshold }}</dd></div>
+    <div><dt>Sentences per batch</dt><dd>{{ settings.batch_size }}</dd></div>
+    <div><dt>Model</dt><dd><code>{{ model }}</code></dd></div>
+  </dl>
+  {% if status.running %}
+    <p class="notice">Generating a batch now…</p>
+  {% elif status.last_error %}
+    <p class="error" role="alert"><strong>Last attempt failed:</strong> {{ status.last_error }}
+      {% if status.last_finished %}<span class="muted">({{ ((now - status.last_finished) / 60)|round|int }} min ago). Automatic generation tries again 30 minutes after a failure.</span>{% endif %}</p>
+  {% elif status.last_finished %}
+    <p class="muted">Last batch: {{ status.last_added }} added, {{ status.last_skipped }} skipped as duplicates or not usable ({{ ((now - status.last_finished) / 60)|round|int }} min ago).</p>
+  {% endif %}
+  <form method="post" action="/owner/generation/run"><button type="submit"{% if status.running or not has_key %} disabled{% endif %}>Generate a batch now</button></form>
+</section>
+
+<form method="post" action="/owner/generation/review-setting" class="panel-box stack">
+  <label class="check-row"><input type="checkbox" name="require_review"{% if settings.require_review %} checked{% endif %}>
+    <span><strong>Review generated sentences before they go live</strong><br><span class="muted">Off: new sentences go straight into the game and the Report button is the safety net.</span></span></label>
+  <div><button type="submit" class="secondary">Save</button></div>
+</form>
+
+<h2>Waiting for review <small class="muted">({{ by_batch.values()|map("length")|sum }})</small></h2>
+{% for batch_id, items in by_batch.items() %}
+  <section class="batch">
+    <div class="row-actions batch-head">
+      <strong>Batch {{ batch_id }}</strong>
+      <span class="muted small-meta">{% if batches.get(batch_id) %}by {{ batches[batch_id].requested_by }} · {{ batches[batch_id].created_at.strftime("%Y-%m-%d %H:%M") }}{% endif %}</span>
+      <form method="post" action="/owner/generation/batch/{{ batch_id }}/approve"><button type="submit">Approve all {{ items|length }}</button></form>
+    </div>
+    {% for s in items %}
+      {% set f = forms.get(s.id) %}
+      <article class="report-card">
+        <p class="report-text" lang="ar" dir="rtl">{{ s.text }}</p>
+        <p class="muted report-gloss">{{ s.english }}{% if s.theme_id %} · <em>{{ themes.get(s.theme_id) }}</em>{% endif %}</p>
+        <details{% if f %} open{% endif %}><summary>Edit</summary>
+          <form method="post" action="/owner/generation/{{ s.id }}/edit" class="stack fix-form">
+            {% if errors.get(s.id) %}<p class="error" role="alert">{{ errors[s.id] }}</p>{% endif %}
+            <label><span>Arabic</span><input name="arabic" dir="rtl" lang="ar" value="{{ f[0] if f else s.text }}"></label>
+            <label><span>English gloss</span><input name="english" value="{{ f[1] if f else s.english }}"></label>
+            <button type="submit">Save</button>
+          </form>
+        </details>
+        <div class="row-actions">
+          <form method="post" action="/owner/generation/{{ s.id }}/approve"><button type="submit" class="secondary">Approve</button></form>
+          <form method="post" action="/owner/generation/{{ s.id }}/delete"><button type="submit" class="danger">Delete</button></form>
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+{% else %}
+  <p class="muted">Nothing waiting.{% if not settings.require_review %} Review is off, so new sentences go straight into the game.{% endif %}</p>
+{% endfor %}
+
+<h2>Recent batches</h2>
+{% if recent %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Batch</th><th>Started by</th><th>When</th><th class="num">Sentences kept</th></tr></thead>
+  <tbody>{% for b, n in recent %}<tr><td>{{ b.id }}</td><td>{{ b.requested_by }}</td><td class="muted">{{ b.created_at.strftime("%Y-%m-%d %H:%M") }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<p class="muted">No batches yet.</p>{% endif %}
+{% endblock %}

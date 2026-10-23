@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="topbar">
+  <a href="/owner" class="brand">Franco · Owner</a>
+  <form method="post" action="/owner/logout">
+    <a href="/owner/account" class="muted" title="Your account">{{ owner.username }}</a>
+    <button type="submit" class="link">Log out</button>
+  </form>
+</header>
+<div class="layout">
+  <nav class="sidenav">
+    {% for s, (t, _, _) in sections.items() %}
+      <a href="/owner/{{ s }}"{% if s == slug %} aria-current="page"{% endif %}>{{ t }}</a>
+    {% endfor %}
+  </nav>
+  <main>
+    {% if slug %}<a href="/owner" class="back">← All sections</a>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="{{ url_for('static', path='owner.js') }}"></script>
+{% endblock %}

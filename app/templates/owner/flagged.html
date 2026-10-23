@@ -1,0 +1,25 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Flagged answers · Franco{% endblock %}
+{% block content %}
+<h1>Flagged answers <small class="muted">({{ rows|length }})</small></h1>
+<p class="muted">Answers that look like junk: much longer than the Arabic, one character repeated many times, or keyboard mashing. They're saved but left out of exports by default. Keep the real ones (stretched words like "kteeeeer" are real typing); exclude the junk.</p>
+{% if done %}<p class="notice" role="status">{{ "Kept. It counts as a normal answer." if done == "keep" else "Excluded. It will never be exported." }}</p>{% endif %}
+{% if rechecked is not none %}<p class="notice" role="status">Re-checked all unreviewed answers: {{ rechecked }} flagged.</p>{% endif %}
+<div class="row-actions" style="margin-bottom:1rem">
+  <span class="muted small-meta">Reviewed so far: {{ kept }} kept, {{ excluded }} excluded.</span>
+  <form method="post" action="/owner/flagged/recheck"><button type="submit" class="secondary">Re-check all answers</button></form>
+</div>
+{% for a, s in rows %}
+  <article class="report-card">
+    <p class="flag-answer"><span class="raw-answer" dir="ltr">{{ a.franco_raw }}</span> <span class="muted">for</span> <strong lang="ar" dir="rtl">{{ a.arabic }}</strong></p>
+    <p class="error small-meta">{{ a.flag_reason }}</p>
+    <p class="muted small-meta"><span lang="ar" dir="rtl">{{ s.text }}</span> · <code>{{ a.player_id }}</code> · <a href="/owner/players/{{ a.player_id }}/delete">delete this player…</a></p>
+    <div class="row-actions">
+      <form method="post" action="/owner/flagged/{{ a.id }}/keep"><button type="submit" class="secondary">Keep</button></form>
+      <form method="post" action="/owner/flagged/{{ a.id }}/exclude"><button type="submit" class="danger">Exclude</button></form>
+    </div>
+  </article>
+{% else %}
+  <p class="muted">Nothing flagged right now.</p>
+{% endfor %}
+{% endblock %}

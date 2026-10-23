@@ -1,0 +1,21 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Deleted sentences · Franco{% endblock %}
+{% block content %}
+<h1>Deleted sentences <small class="muted">({{ rows|length }})</small></h1>
+{% if restored %}<p class="notice" role="status">Restored. It's back in the game.</p>{% endif %}
+<p class="muted">Deleted sentences can't be added again or regenerated. Restore one to put it back in the game.</p>
+{% if rows %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Arabic</th><th>English</th><th></th></tr></thead>
+  <tbody>
+  {% for s in rows %}
+    <tr>
+      <td lang="ar" dir="rtl">{{ s.text }}</td>
+      <td>{{ s.english }}</td>
+      <td><form method="post" action="/owner/sentences/{{ s.id }}/restore"><button type="submit" class="secondary">Restore</button></form></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">No deleted sentences.</p>{% endif %}
+{% endblock %}

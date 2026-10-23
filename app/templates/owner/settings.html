@@ -1,0 +1,34 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Settings · Franco{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+{% if saved %}<p class="notice" role="status">Settings saved.</p>{% endif %}
+{% if errors %}<p class="error" role="alert">Nothing was saved. Fix the fields marked below.</p>{% endif %}
+<form method="post" action="/owner/settings" class="settings" novalidate>
+  {% for group, items in groups.items() %}
+  <fieldset>
+    <legend>{{ group }}</legend>
+    {% for key, spec in items %}
+    <div class="setting{% if key in errors %} has-error{% endif %}">
+      {% if spec.default is sameas true or spec.default is sameas false %}
+        <label class="check">
+          <input type="checkbox" name="{{ key }}"{% if values[key] %} checked{% endif %}>
+          {{ spec.label }}
+        </label>
+      {% else %}
+        <label for="{{ key }}">{{ spec.label }}</label>
+        <input id="{{ key }}" name="{{ key }}" value="{{ values[key] }}"
+               inputmode="{{ 'numeric' if spec.default is integer else 'decimal' }}">
+      {% endif %}
+      <p class="help">{{ spec.help }}
+        <span class="muted">Default: {{ 'on' if spec.default is sameas true else 'off' if spec.default is sameas false else spec.default }}.
+        {% if spec.step > 2 %}Takes effect once step {{ spec.step }} is built.{% endif %}</span>
+      </p>
+      {% if key in errors %}<p class="error">{{ errors[key] }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </fieldset>
+  {% endfor %}
+  <button type="submit">Save settings</button>
+</form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Stats · Franco{% endblock %}
+{% block content %}
+<h1>Stats</h1>
+<dl class="tiles">
+  <div><dt>Players who answered</dt><dd>{{ s.players }}</dd></div>
+  <div><dt>Answers</dt><dd>{{ s.answers }}</dd></div>
+  <div><dt>Arabic words with answers</dt><dd>{{ s.words }}</dd></div>
+  <div><dt>Different spellings</dt><dd>{{ s.variants }}</dd></div>
+  <div><dt>Sentences in play</dt><dd>{{ s.sentences_active }}</dd></div>
+</dl>
+<div class="two-col">
+  <section>
+    <h2>Most covered words</h2>
+    {% if s.most %}<ol class="wordlist">{% for w, n in s.most %}<li><span lang="ar">{{ w }}</span><span class="num">{{ n }}</span></li>{% endfor %}</ol>
+    {% else %}<p class="muted">No answers yet.</p>{% endif %}
+  </section>
+  <section>
+    <h2>Least covered words</h2>
+    <p class="muted small">Words in sentences currently in play.</p>
+    {% if s.least %}<ol class="wordlist">{% for w, n in s.least %}<li><span lang="ar">{{ w }}</span><span class="num">{{ n }}</span></li>{% endfor %}</ol>
+    {% else %}<p class="muted">No sentences in play.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

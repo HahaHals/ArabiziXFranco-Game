@@ -1,0 +1,41 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Reports queue · Franco{% endblock %}
+{% macro card(sentence, open_reports) %}
+<article class="report-card" id="s{{ sentence.id }}">
+  <p class="report-text" lang="ar" dir="rtl">{{ sentence.text }}</p>
+  {% if sentence.english %}<p class="muted report-gloss">{{ sentence.english }}</p>{% endif %}
+  <p class="muted small-meta">{{ open_reports|length }} report{{ "" if open_reports|length == 1 else "s" }} · {{ answers.get(sentence.id, 0) }} player{{ "" if answers.get(sentence.id, 0) == 1 else "s" }} answered</p>
+  {% if open_reports %}
+  <ul class="reasons">
+    {% for r in open_reports %}
+    <li><strong>{{ labels[r.reason] }}</strong>{% if r.comment %}: <q>{{ r.comment }}</q>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% set f = forms.get(sentence.id) %}
+  <details{% if f %} open{% endif %}>
+    <summary>Fix and re-release</summary>
+    <form method="post" action="/owner/sentences/{{ sentence.id }}/fix" class="stack fix-form">
+      {% if errors.get(sentence.id) %}<p class="error" role="alert">{{ errors[sentence.id] }}</p>{% endif %}
+      <label><span>Arabic</span><input name="arabic" dir="rtl" lang="ar" value="{{ f[0] if f else sentence.text }}"></label>
+      <label><span>English gloss</span><input name="english" value="{{ f[1] if f else sentence.english }}"></label>
+      <p class="muted small-meta">Changing only the English, punctuation or harakat keeps the existing answers. Changing the words makes a new sentence; the old one and its answers stay as history.</p>
+      <button type="submit">Save and put back in the game</button>
+    </form>
+  </details>
+  <div class="row-actions">
+    <form method="post" action="/owner/sentences/{{ sentence.id }}/dismiss"><button type="submit" class="secondary">Dismiss reports{% if sentence.status.value == "reported" %} and put back{% endif %}</button></form>
+    <form method="post" action="/owner/sentences/{{ sentence.id }}/delete"><button type="submit" class="danger">Delete</button></form>
+  </div>
+</article>
+{% endmacro %}
+{% block content %}
+<h1>Reports queue</h1>
+{% if done %}<p class="notice" role="status">{{ {"fixed": "Fixed and back in the game.", "replaced": "Saved as a new sentence and put in the game. The old one is kept as history.", "dismissed": "Reports dismissed. The sentence is in the game.", "deleted": "Deleted. You can restore it from Deleted sentences."}[done] }}</p>{% endif %}
+
+<h2>Taken out of the game <small class="muted">({{ pulled|length }})</small></h2>
+{% for sentence, open_reports in pulled %}{{ card(sentence, open_reports) }}{% else %}<p class="muted">Nothing here. Sentences land here once they get enough reports.</p>{% endfor %}
+
+<h2>Reported but still in the game <small class="muted">({{ live|length }})</small></h2>
+{% for sentence, open_reports in live %}{{ card(sentence, open_reports) }}{% else %}<p class="muted">None.</p>{% endfor %}
+{% endblock %}

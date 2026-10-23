@@ -1,0 +1,43 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Themes · Franco{% endblock %}
+{% block content %}
+<h1>Themes</h1>
+<p class="muted">Claude spreads each batch across the active themes. Adding a theme widens the mix for new batches; it never changes existing sentences.</p>
+{% if done %}<p class="notice" role="status">{{ "Theme added." if done == "added" else "Theme saved." }}</p>{% endif %}
+
+<form method="post" action="/owner/themes" class="stack panel-box narrow-form">
+  <h2>{{ "Edit theme" if form.theme_id else "Add a theme" }}</h2>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  {% if form.theme_id %}<input type="hidden" name="theme_id" value="{{ form.theme_id }}">{% endif %}
+  <label><span>Name</span><input name="name" value="{{ form.name or '' }}" placeholder="ordering food"></label>
+  <label><span>Description <small class="muted">(optional, helps Claude)</small></span>
+    <input name="description" value="{{ form.description or '' }}" placeholder="Ordering from restaurants and delivery apps"></label>
+  <button type="submit">{{ "Save theme" if form.theme_id else "Add theme" }}</button>
+</form>
+
+<h2>All themes <small class="muted">({{ themes|length }})</small></h2>
+{% if themes %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Theme</th><th class="num">Sentences</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for t in themes %}
+    <tr>
+      <td><strong>{{ t.name }}</strong>{% if t.description %}<br><span class="muted">{{ t.description }}</span>{% endif %}
+        <details class="inline-edit"><summary>Edit</summary>
+          <form method="post" action="/owner/themes" class="stack">
+            <input type="hidden" name="theme_id" value="{{ t.id }}">
+            <label><span>Name</span><input name="name" value="{{ t.name }}"></label>
+            <label><span>Description</span><input name="description" value="{{ t.description }}"></label>
+            <button type="submit">Save</button>
+          </form>
+        </details>
+      </td>
+      <td class="num">{{ counts.get(t.id, 0) }}</td>
+      <td><span class="pill {{ 'pill-active' if t.active else '' }}">{{ "active" if t.active else "off" }}</span></td>
+      <td><form method="post" action="/owner/themes/{{ t.id }}/toggle"><button type="submit" class="secondary">{{ "Turn off" if t.active else "Turn on" }}</button></form></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">No themes yet. Until you add one, Claude writes about daily life.</p>{% endif %}
+{% endblock %}

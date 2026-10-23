@@ -1,0 +1,22 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Your account · Franco{% endblock %}
+{% block content %}
+<h1>Your account</h1>
+<p>Logged in as <strong>{{ owner.username }}</strong>.</p>
+<h2>Change password</h2>
+{% if changed %}<p class="notice" role="status">Password changed.</p>{% endif %}
+<form method="post" action="/owner/account" class="stack account-form">
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <label>Current password
+    <input name="current" type="password" autocomplete="current-password" required>
+  </label>
+  <label>New password
+    <input name="new" type="password" autocomplete="new-password" required>
+    <small class="muted">At least {{ min_length }} characters.</small>
+  </label>
+  <label>Repeat new password
+    <input name="repeat" type="password" autocomplete="new-password" required>
+  </label>
+  <button type="submit">Change password</button>
+</form>
+{% endblock %}

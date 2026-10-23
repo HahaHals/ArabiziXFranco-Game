@@ -1,0 +1,32 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Target words · Franco{% endblock %}
+{% block content %}
+<h1>Target words</h1>
+<p class="muted">Words you want more spellings of. Claude works them into new sentences until each has {{ threshold }} answers (change that number in Settings).</p>
+{% if added is not none %}<p class="notice" role="status">Added {{ added }}{% if skipped and skipped != "0" %}; skipped {{ skipped }} already listed or not Arabic{% endif %}.</p>{% endif %}
+
+<form method="post" action="/owner/target-words" class="stack panel-box narrow-form">
+  <label><span>Add words <small class="muted">(separate with spaces or new lines)</small></span>
+    <textarea name="words" rows="3" dir="rtl" lang="ar" placeholder="ازيك معلش خلاص"></textarea></label>
+  <button type="submit">Add words</button>
+</form>
+
+<h2>Progress <small class="muted">({{ rows|length }})</small></h2>
+{% if rows %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Word</th><th>Answers</th><th></th></tr></thead>
+  <tbody>
+  {% for w, n in rows %}
+    <tr>
+      <td lang="ar" dir="rtl" class="big-word">{{ w.word }}</td>
+      <td>
+        <div class="progress" role="img" aria-label="{{ n }} of {{ threshold }}"><span style="width: {{ [100, (n / threshold * 100)|round]|min }}%"></span></div>
+        <span class="muted small-meta">{{ n }} / {{ threshold }}{% if n >= threshold %} · done{% endif %}</span>
+      </td>
+      <td><form method="post" action="/owner/target-words/{{ w.id }}/remove"><button type="submit" class="secondary">Remove</button></form></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">No target words yet.</p>{% endif %}
+{% endblock %}

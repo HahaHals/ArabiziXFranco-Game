@@ -1,0 +1,56 @@
+{% extends "owner/_layout.html" %}
+{% block title %}Own sentences · Franco{% endblock %}
+{% block content %}
+<h1>Own sentences</h1>
+{% if result %}
+  {% if result.added %}<p class="notice" role="status">Added {{ result.added|length }} sentence{{ "" if result.added|length == 1 else "s" }}.</p>{% endif %}
+  {% if result.duplicates %}
+    <div class="warn"><strong>Skipped {{ result.duplicates|length }} already in the game:</strong>
+      <ul>{% for d in result.duplicates %}<li lang="ar" dir="rtl">{{ d }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  {% for line, reason in result.invalid %}<p class="error" role="alert">{{ reason }}{% if line %}: <span lang="ar">{{ line }}</span>{% endif %}</p>{% endfor %}
+{% endif %}
+
+<div class="two-col">
+  <form method="post" action="/owner/sentences" class="stack panel-box">
+    <h2>Add one</h2>
+    <label>Arabic sentence
+      <input name="arabic" dir="rtl" lang="ar" value="{{ form.arabic or '' }}">
+    </label>
+    <label><span>English gloss <small class="muted">(optional)</small></span>
+      <input name="english" value="{{ form.english or '' }}">
+    </label>
+    <button type="submit">Add sentence</button>
+  </form>
+
+  <form method="post" action="/owner/sentences" class="stack panel-box">
+    <h2>Paste many</h2>
+    <label><span>One sentence per line. Add the English after a <code>|</code> if you like.</span>
+      <textarea name="bulk" rows="6" dir="auto" placeholder="انا رايح الشغل | I'm going to work&#10;هنروح فين النهارده؟ | Where are we going today?">{{ form.bulk or '' }}</textarea>
+    </label>
+    <button type="submit">Add all</button>
+  </form>
+</div>
+
+<h2>Latest sentences <small class="muted">({{ total }} in total)</small></h2>
+{% if recent %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Arabic</th><th>English</th><th class="num">Words</th><th class="num">Players</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for sentence, players in recent %}
+    <tr>
+      <td lang="ar" dir="rtl">{{ sentence.text }}</td>
+      <td>{{ sentence.english }}</td>
+      <td class="num">{{ sentence.words|length }}</td>
+      <td class="num">{{ players }}</td>
+      <td><span class="pill pill-{{ sentence.status.value }}">{{ sentence.status.value|replace("_", " ") }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="muted">No sentences yet. Add some above.</p>
+{% endif %}
+{% endblock %}
