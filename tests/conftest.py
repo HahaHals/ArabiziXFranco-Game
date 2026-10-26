@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
@@ -8,13 +10,25 @@ from app.db import Base, get_db, make_engine
 from app.main import app
 
 
+# Tests run on in-memory SQLite. Set TEST_DATABASE_URL to run them against Postgres
+# (an empty test database; every table is dropped and recreated per test).
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
+
+
 @pytest.fixture
 def db():
-    engine = make_engine("sqlite://", poolclass=StaticPool)  # one shared in-memory connection
+    if TEST_DATABASE_URL:
+        from app.config import Config
+        engine = make_engine(Config(database_url=TEST_DATABASE_URL).database_url)
+        Base.metadata.drop_all(engine)
+    else:
+        engine = make_engine("sqlite://", poolclass=StaticPool)  # one shared in-memory connection
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)()
     yield session
     session.close()
+    if TEST_DATABASE_URL:
+        Base.metadata.drop_all(engine)
     engine.dispose()
 
 

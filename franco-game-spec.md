@@ -14,7 +14,7 @@ There are no correct answers. Every honest spelling is valid data.
 - **Sentence sources:** sentences come from two places, mixed into the same rotation:
   - **Generated:** Anthropic API, called **server-side only**. The API key lives in an environment variable (`ANTHROPIC_API_KEY`) and never reaches the browser. The model name is configurable via env (`ANTHROPIC_MODEL`, default `claude-haiku-5-5`, the cheapest; switch to `claude-sonnet-5-5` if quality is poor). Requests use structured JSON output at low effort.
   - **Owner input:** sentences typed or pasted in by owners through the owner panel (see 4.1 and section 6).
-- **Hosting:** to be decided (Render, Railway, Fly.io, or similar).
+- **Hosting:** Render free web service (sleeps when idle) + Neon free Postgres (doesn't expire). Render's free Postgres is deleted after 30 days, so it isn't used. See the README for setup.
 
 ---
 

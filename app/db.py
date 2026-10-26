@@ -22,6 +22,10 @@ class Base(DeclarativeBase):
 def make_engine(url: str, **kwargs):
     if url.startswith("sqlite"):
         kwargs.setdefault("connect_args", {"check_same_thread": False})
+    else:
+        # A free database that sleeps when idle drops connections; check before using one.
+        kwargs.setdefault("pool_pre_ping", True)
+        kwargs.setdefault("pool_recycle", 300)
     engine = create_engine(url, **kwargs)
     if url.startswith("sqlite"):
         # SQLite ignores foreign keys unless asked.

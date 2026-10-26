@@ -1,0 +1,24 @@
+# Render Blueprint: one free web service. The database lives on Neon (free, doesn't expire);
+# paste its connection string into DATABASE_URL when Render asks.
+services:
+  - type: web
+    name: franco-game
+    runtime: python
+    plan: free
+    region: frankfurt   # closest Render region to Egypt
+    buildCommand: pip install -r requirements.txt
+    startCommand: sh start.sh
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # Neon connection string, entered in Render's dashboard
+      - key: SECRET_KEY
+        generateValue: true  # random, made by Render
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: SETUP_CODE
+        sync: false          # 12+ characters; unlocks the first owner account page
+      - key: ANTHROPIC_API_KEY
+        sync: false          # optional; without it the game runs on owner-added sentences
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-5-5
