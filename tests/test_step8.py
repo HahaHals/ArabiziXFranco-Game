@@ -66,8 +66,9 @@ def test_raw_options(owner_client, db, data):
     rows = _csv(owner_client.get("/owner/export/answers.csv?flagged=true&timestamps=true"))
     assert len(rows) == 7 and rows[0]["created_at"]
     lines = owner_client.get("/owner/export/answers.jsonl").text.strip().split("\n")
-    first = json.loads(lines[0])
-    assert len(lines) == 6 and first["joined"] is False and isinstance(first["position_start"], int)
+    parsed = [json.loads(x) for x in lines]
+    assert len(parsed) == 6 and {p["joined"] for p in parsed} == {True, False}  # real booleans
+    assert all(isinstance(p["position_start"], int) for p in parsed)
     assert "هنروح" in owner_client.get("/owner/export/answers.jsonl").text  # not \\u-escaped
 
 

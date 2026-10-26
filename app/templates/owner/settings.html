@@ -15,14 +15,16 @@
           <input type="checkbox" name="{{ key }}"{% if values[key] %} checked{% endif %}>
           {{ spec.label }}
         </label>
+      {% elif spec.default is string %}
+        <label for="{{ key }}">{{ spec.label }}</label>
+        <textarea id="{{ key }}" name="{{ key }}" rows="9" dir="{{ 'rtl' if key.endswith('_ar') else 'auto' }}">{{ values[key] }}</textarea>
       {% else %}
         <label for="{{ key }}">{{ spec.label }}</label>
         <input id="{{ key }}" name="{{ key }}" value="{{ values[key] }}"
                inputmode="{{ 'numeric' if spec.default is integer else 'decimal' }}">
       {% endif %}
       <p class="help">{{ spec.help }}
-        <span class="muted">Default: {{ 'on' if spec.default is sameas true else 'off' if spec.default is sameas false else spec.default }}.
-        {% if spec.step > 2 %}Takes effect once step {{ spec.step }} is built.{% endif %}</span>
+        <span class="muted">{% if spec.default is string %}Empty the box to go back to the original text.{% else %}Default: {{ 'on' if spec.default is sameas true else 'off' if spec.default is sameas false else spec.default }}.{% endif %}</span>
       </p>
       {% if key in errors %}<p class="error">{{ errors[key] }}</p>{% endif %}
     </div>

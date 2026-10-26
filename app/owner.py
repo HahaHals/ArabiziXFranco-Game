@@ -19,7 +19,7 @@ from app.models import (
     TargetWord, Theme, ViewOutcome,
 )
 from app.templating import templates
-from app.text import non_arabic_words, normalize_sentence, split_words
+from app.text import MAX_DISPLAY_NAME, clean_display_name, non_arabic_words, normalize_sentence, split_words
 
 router = APIRouter(prefix="/owner")
 
@@ -238,12 +238,34 @@ def _player_rows(db, limit=500):
 def players_page(
     request: Request, owner: Owner = Depends(auth.require_owner), db: Session = Depends(get_db)
 ):
-    deleted = request.query_params.get("deleted")
     return templates.TemplateResponse(
         request, "owner/players.html",
         {"owner": owner, "sections": SECTIONS, "slug": "players", "rows": _player_rows(db),
-         "total": db.scalar(select(func.count(Player.id))), "deleted": deleted},
+         "total": db.scalar(select(func.count(Player.id))),
+         "deleted": request.query_params.get("deleted"), "renamed": request.query_params.get("renamed"),
+         "error": None, "max_name": MAX_DISPLAY_NAME},
     )
+
+
+@router.post("/players/{player_id}/name")
+def player_rename(
+    player_id: str, request: Request, display_name: str = Form(""),
+    owner: Owner = Depends(auth.require_owner), db: Session = Depends(get_db),
+):
+    """Rename or clear a player's leaderboard name (e.g. a rude one). Empty clears it."""
+    player = db.get(Player, player_id) or _404()
+    name = clean_display_name(display_name)
+    if len(name) > MAX_DISPLAY_NAME:
+        return templates.TemplateResponse(
+            request, "owner/players.html",
+            {"owner": owner, "sections": SECTIONS, "slug": "players", "rows": _player_rows(db),
+             "total": db.scalar(select(func.count(Player.id))), "deleted": None, "renamed": None,
+             "error": f"Names must be under {MAX_DISPLAY_NAME} characters.", "max_name": MAX_DISPLAY_NAME},
+            status_code=422,
+        )
+    player.display_name = name or None
+    db.commit()
+    return RedirectResponse(f"/owner/players?renamed={player_id}", status_code=303)
 
 
 @router.get("/players/{player_id}/delete")

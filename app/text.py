@@ -29,6 +29,14 @@ def normalize_sentence(text: str) -> str:
     return " ".join(split_words(_ARABIC_MARKS.sub("", text)))
 
 
+MAX_DISPLAY_NAME = 30
+
+
+def clean_display_name(name: str) -> str:
+    """Leaderboard name: printable characters only, single spaces."""
+    return " ".join("".join(c for c in name if c.isprintable()).split())
+
+
 def clean(text: str) -> str:
     """The `franco` column: trimmed, inner whitespace collapsed, lowercase, straight apostrophes."""
     return " ".join(text.translate(_APOSTROPHES).split()).lower()

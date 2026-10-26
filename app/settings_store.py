@@ -17,13 +17,13 @@ from app.models import Setting
 
 @dataclass(frozen=True)
 class Spec:
-    default: bool | int | float
+    default: bool | int | float | str
     label: str
     help: str
     group: str
     step: int  # build step that starts using it
     min: float | None = None
-    max: float | None = None
+    max: float | None = None  # for text: the maximum length
 
 
 SPECS: dict[str, Spec] = {
@@ -76,6 +76,21 @@ SPECS: dict[str, Spec] = {
         20, "Max submissions per minute", "Per player. A network address (shared by friends on the same Wi-Fi) gets 5 times this.",
         "Rate limiting", 7, 1, 600,
     ),
+    # Welcome screen (3.1). One paragraph per line.
+    "welcome_ar": Spec(
+        "اكتب كل كلمة بالفرانكو زي ما بتكتبها عادي. مفيش صح ومفيش غلط.\n"
+        "لو لقيت جملة فيها غلطة إملائية، أو مش مصري، أو مش لايقة، أو مش مفهومة، دوس على «إبلاغ».\n"
+        "اتأكد إن الأوتوكوريكت أو الكتابة التلقائية في الكيبورد مش بتغيّر اللي بتكتبه.\n"
+        "إجاباتك بتتحفظ من غير اسمك، وبنستخدمها عشان نبني داتا.",
+        "Arabic text", "Shown first. Each line is a paragraph.", "Welcome screen", 9, None, 2000,
+    ),
+    "welcome_en": Spec(
+        "Write each word the way you'd naturally type it in Franco. There's no right or wrong.\n"
+        "If a sentence looks misspelled, isn't Egyptian, is inappropriate, or doesn't make sense, tap Report.\n"
+        "Make sure your keyboard's autocorrect or autocomplete isn't changing what you type.\n"
+        "Your answers are saved anonymously and used to build a dataset.",
+        "English text", "Shown under the Arabic. Each line is a paragraph.", "Welcome screen", 9, None, 2000,
+    ),
 }
 
 DEFAULTS: dict[str, Any] = {key: spec.default for key, spec in SPECS.items()}
@@ -90,6 +105,13 @@ def _check(key: str, value: Any) -> Any:
         raise UnknownSetting(key)
     spec = SPECS[key]
     expected = type(spec.default)
+    if expected is str:
+        if not isinstance(value, str):
+            raise TypeError(f"{key} must be text")
+        value = value.replace("\r\n", "\n").strip()
+        if spec.max is not None and len(value) > spec.max:
+            raise ValueError(f"Keep it under {spec.max:g} characters")
+        return value or spec.default  # empty goes back to the original text
     # bool is a subclass of int; keep them strictly apart.
     if expected is bool and not isinstance(value, bool):
         raise TypeError(f"{key} must be a bool")
@@ -146,6 +168,13 @@ def parse_form(form: dict[str, str]) -> tuple[dict[str, Any], dict[str, str]]:
     for key, spec in SPECS.items():
         if isinstance(spec.default, bool):
             values[key] = key in form  # unchecked boxes aren't submitted
+            continue
+        if isinstance(spec.default, str):
+            try:
+                values[key] = _check(key, form.get(key, ""))
+            except ValueError as e:
+                values[key] = form.get(key, "")
+                errors[key] = str(e)
             continue
         raw = form.get(key, "").strip()
         try:

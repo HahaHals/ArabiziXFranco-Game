@@ -50,6 +50,8 @@ Shown in Egyptian Arabic first, with English below.
 
 There is an optional display-name field, used only for the leaderboard.
 
+Owners can edit both texts in Settings (one paragraph per line; emptying a box restores the original text).
+
 ### 3.2 A round
 
 1. Show the **full Arabic sentence** (right-to-left) and an **English gloss** under it.
@@ -75,7 +77,9 @@ Inputs: **do not** disable autocorrect, autocapitalize, or spellcheck. Players' 
 ### 3.4 Motivation
 
 - A counter of how many words this player has contributed.
-- A leaderboard by display name (players without a display name appear as "Anonymous" and can be excluded from it).
+- A leaderboard by display name. Players without a display name are left off it. It shows the top 20 by words, plus your own rank.
+- Words are counted per Arabic word: a joined box of two words counts as two. Answers an owner excluded don't count.
+- The display name is optional, at most 30 characters, and can be changed from the help (?) screen.
 
 ---
 
@@ -176,7 +180,7 @@ An owner can **restore** a `deleted` sentence back to `active`.
 - **Reports queue** (section 5).
 - **Deleted sentences:** list them and **restore** one to `active` (the only way to bring back deleted text, see 4.2).
 - **Flagged answers:** review rows the junk filter flagged (section 7); keep or exclude them.
-- **Players:** list by player ID and display name with their contribution count. **Delete all rows from a player** in one action (for junk players).
+- **Players:** list by player ID and display name with their contribution count. Owners can **rename or clear** a display name (e.g. a rude one). **Delete all rows from a player** in one action (for junk players).
 - **Export** (section 9).
 
 ---

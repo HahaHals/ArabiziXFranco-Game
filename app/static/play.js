@@ -1,6 +1,7 @@
 // The player round (spec 3.2): one box per Arabic word, link toggles to join neighbours.
 (() => {
   const KEY = "franco-player-id";
+  const WELCOMED = "franco-welcomed";
   const $ = (id) => document.getElementById(id);
   const LINK_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
 
@@ -9,6 +10,8 @@
   let links = [];      // links[i]: word i is joined to word i+1 (0-based)
   let values = {};     // "start-end" (0-based) -> typed text
   let errors = {};     // "start-end" -> message
+  let words = 0;       // words this player has contributed
+  let displayName = "";
 
   async function api(path, options) {
     const r = await fetch(path, options);
@@ -144,6 +147,8 @@
         }),
       });
       if (r.ok) {
+        words += gs.reduce((n, [s, e]) => n + e - s + 1, 0);
+        renderCounter();
         $("toast").hidden = false;
         setTimeout(() => { $("toast").hidden = true; }, 1200);
         await loadRound();
@@ -223,16 +228,91 @@
     }
   });
 
+  // ---- Word counter, welcome screen, leaderboard (spec 3.1, 3.4) ----
+  function renderCounter() {
+    $("counter").textContent = `${words} word${words === 1 ? "" : "s"} · ${words.toLocaleString("ar-EG")} كلمة`;
+  }
+
+  function show(view) {
+    $("welcome").hidden = view !== "welcome";
+    $("board").hidden = view !== "board";
+    $("game").hidden = view !== "game";
+    window.scrollTo(0, 0);
+  }
+
+  function openWelcome(first) {
+    $("name").value = displayName;
+    $("name-error").hidden = true;
+    $("welcome-go").textContent = first ? "Let's go · يلا بينا" : "Back to the game · ارجع للعبة";
+    show("welcome");
+  }
+
+  $("help-open").addEventListener("click", () => openWelcome(false));
+  $("welcome-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const name = $("name").value.trim();
+    if (name !== displayName) {
+      const r = await api("/api/name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player_id: playerId, display_name: name }),
+      }).catch(() => ({ ok: false, body: {} }));
+      if (!r.ok) {
+        $("name-error").textContent = (r.body && typeof r.body.detail === "string") ? r.body.detail : "Couldn't save your name. Try again.";
+        $("name-error").hidden = false;
+        return;
+      }
+      displayName = r.body.display_name || "";
+    }
+    try { localStorage.setItem(WELCOMED, "1"); } catch (e) {}
+    show("game");
+    if (!sentence) await loadRound();
+  });
+
+  $("board-open").addEventListener("click", async () => {
+    show("board");
+    $("board-list").innerHTML = "";
+    $("board-note").textContent = "Loading…";
+    const r = await api(`/api/leaderboard?player_id=${encodeURIComponent(playerId)}`).catch(() => ({ ok: false }));
+    if (!r.ok) { $("board-note").textContent = "Couldn't load the leaderboard."; return; }
+    $("board-list").innerHTML = r.body.top.map((p) =>
+      `<li class="${p.you ? "you" : ""}"><span class="rank">${p.rank}</span><span class="who" dir="auto">${esc(p.name)}${p.you ? " <small>(you · إنت)</small>" : ""}</span><span class="num">${p.words}</span></li>`
+    ).join("");
+    let note = r.body.top.length ? "" : "Nobody's on it yet. Be the first! · لسه محدش، خليك الأول!";
+    if (!displayName) note = "Add a name (the ? button) to show up here · حط اسمك عشان تظهر هنا";
+    else if (r.body.you && !r.body.top.some((p) => p.you)) note = `You're #${r.body.you.rank} with ${r.body.you.words} words.`;
+    $("board-note").textContent = note;
+  });
+  $("board-close").addEventListener("click", () => show("game"));
+
   function focusFirstError() {
     const el = document.querySelector(".box.has-error input");
     if (el) el.focus();
   }
 
+  async function loadMe() {
+    let r = await api(`/api/me?player_id=${encodeURIComponent(playerId)}`);
+    if (r.status === 404) {
+      await ensurePlayer(true);
+      r = await api(`/api/me?player_id=${encodeURIComponent(playerId)}`);
+    }
+    if (!r.ok) throw new Error("me");
+    words = r.body.words;
+    displayName = r.body.display_name || "";
+    renderCounter();
+  }
+
   async function start() {
     try {
       await ensurePlayer();
+      await loadMe();
+      let welcomed = false;
+      try { welcomed = !!localStorage.getItem(WELCOMED); } catch (e) {}
+      if (!welcomed) { openWelcome(true); return; }
+      show("game");
       await loadRound();
     } catch (e) {
+      show("game");
       $("failed").hidden = false;
     }
   }

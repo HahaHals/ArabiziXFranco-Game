@@ -1,7 +1,39 @@
 {% extends "base.html" %}
 {% block title %}Franco{% endblock %}
 {% block body %}
+<header class="play-bar">
+  <p class="counter" id="counter" aria-live="polite"></p>
+  <div class="bar-buttons">
+    <button type="button" class="icon-btn" id="board-open" aria-label="Leaderboard · الترتيب" title="Leaderboard · الترتيب">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+    </button>
+    <button type="button" class="icon-btn" id="help-open" aria-label="How to play · إزاي تلعب" title="How to play · إزاي تلعب">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 4"/><path d="M12 17.5h.01"/></svg>
+    </button>
+  </div>
+</header>
 <main class="play">
+  <section id="welcome" class="welcome" hidden>
+    <div lang="ar" dir="rtl" class="welcome-ar">
+      {% for p in welcome_ar %}<p>{{ p }}</p>{% endfor %}
+    </div>
+    <div lang="en" class="welcome-en">
+      {% for p in welcome_en %}<p>{{ p }}</p>{% endfor %}
+    </div>
+    <form id="welcome-form" class="stack" novalidate>
+      <label><span>Name for the leaderboard <small class="muted">(optional) · اسمك في الترتيب (اختياري)</small></span>
+        <input id="name" maxlength="30" autocomplete="nickname"></label>
+      <p class="error" id="name-error" role="alert" hidden></p>
+      <button type="submit" id="welcome-go">Let's go · يلا بينا</button>
+    </form>
+  </section>
+  <section id="board" hidden>
+    <h2>Leaderboard · الترتيب</h2>
+    <ol class="board-list" id="board-list"></ol>
+    <p class="muted" id="board-note"></p>
+    <button type="button" id="board-close">Back to the game · ارجع للعبة</button>
+  </section>
+  <div id="game">
   <section id="round" hidden>
     <p class="sentence" lang="ar" dir="rtl" id="sentence"></p>
     <p class="gloss" id="gloss"></p>
@@ -40,6 +72,7 @@
     <p>Something went wrong loading the game.</p>
     <button type="button" id="retry">Try again</button>
   </section>
+  </div>
   <div class="toast" id="toast" role="status" hidden>Saved · اتحفظ ✓</div>
 </main>
 <script src="{{ url_for('static', path='play.js') }}"></script>

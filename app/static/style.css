@@ -201,3 +201,32 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .export-form legend { margin-bottom: .4rem; }
 .export-form .reasons-pick label { align-items: flex-start; }
 .export-form .reasons-pick input { margin-top: .2rem; }
+
+/* ---------- Player: top bar, welcome, leaderboard ---------- */
+.play-bar {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  max-width: 44rem; margin: 0 auto; padding: .6rem 16px 0;
+}
+.counter { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); }
+.bar-buttons { display: flex; gap: .4rem; }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 2.4rem; height: 2.4rem; padding: 0; border-radius: 50%;
+  background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 400;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.welcome { display: grid; gap: 1.25rem; }
+.welcome-ar p { font-size: 1.15rem; line-height: 1.8; margin: 0 0 .5rem; }
+.welcome-en p { color: var(--muted); margin: 0 0 .4rem; }
+.welcome-en { border-top: 1px solid var(--line); padding-top: 1rem; }
+#welcome-form label { display: grid; gap: .3rem; font-weight: 500; }
+#board h2 { margin: 0 0 1rem; }
+.board-list { list-style: none; margin: 0 0 1rem; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.board-list:empty { display: none; }
+.board-list li { display: grid; grid-template-columns: 2rem 1fr auto; gap: .75rem; padding: .6rem .9rem; border-bottom: 1px solid var(--line); align-items: center; }
+.board-list li:last-child { border-bottom: 0; }
+.board-list .rank { color: var(--muted); font-variant-numeric: tabular-nums; }
+.board-list .who { min-width: 0; overflow-wrap: anywhere; }
+.board-list li.you { background: color-mix(in srgb, var(--accent) 12%, transparent); font-weight: 600; }
+.name-form { display: flex; gap: .4rem; align-items: center; min-width: 13rem; }
+.name-form input { padding: .4rem .55rem; }
+.name-form button { padding: .4rem .7rem; }
