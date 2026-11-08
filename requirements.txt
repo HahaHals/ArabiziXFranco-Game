@@ -1,3 +1,4 @@
+# Keep in sync with the dependencies in pyproject.toml.
 fastapi==0.159.1
 uvicorn==0.54.0
 SQLAlchemy==2.1.6

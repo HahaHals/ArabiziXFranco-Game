@@ -1,3 +1,30 @@
+[project]
+name = "franco-game"
+version = "1.0.0"
+description = "Collects how people write Egyptian Arabic words in Franco (Arabizi)."
+requires-python = ">=3.12"
+# Keep in sync with requirements.txt (used by hosts that install from it, e.g. Render).
+dependencies = [
+    "fastapi[standard]==0.159.1",
+    "uvicorn==0.54.0",
+    "SQLAlchemy==2.1.6",
+    "alembic==1.20.1",
+    "pydantic-settings==2.16.1",
+    "psycopg[binary]==3.3.6",
+    "Jinja2==3.1.6",
+    "python-multipart==0.0.32",
+    "itsdangerous==2.2.0",
+    "argon2-cffi==25.1.0",
+    "anthropic==2.1.0",
+]
+
+[tool.fastapi]
+# Where the app object lives, for `fastapi run` and FastAPI Cloud.
+entrypoint = "app.main:app"
+
+[tool.uv]
+package = false  # an app, not a library to build
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

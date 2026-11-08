@@ -22,6 +22,8 @@ class Config(BaseSettings):
     # Send the owner session cookie over HTTPS only. Turn on in production.
     cookie_secure: bool = False
     session_days: int = 7
+    # Apply database migrations when the app starts.
+    migrate_on_start: bool = True
     # Unlocks the first-time "create owner account" page while no owner exists.
     # Empty (or shorter than SETUP_CODE_MIN_LENGTH) keeps that page switched off.
     setup_code: str = ""

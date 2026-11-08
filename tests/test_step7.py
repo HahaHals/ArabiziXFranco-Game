@@ -124,3 +124,13 @@ def test_rate_limit_window_slides():
         ratelimit.check(req, "p_x", 2, now=30)
     ratelimit.check(req, "p_x", 2, now=61)  # the first hit has expired
     ratelimit.check(req, "p_other", 2, now=61)  # another player on the same IP is fine
+
+
+def test_rate_limit_uses_forwarded_ip(client, db):
+    # Behind a host's proxy every request comes from the proxy; the player's IP is in
+    # X-Forwarded-For, so two players behind the same proxy get separate limits.
+    settings_store.set_value(db, "rate_limit_per_minute", 1)  # 5 per IP
+    for _ in range(5):
+        assert client.post("/api/players", headers={"X-Forwarded-For": "1.1.1.1"}).status_code == 200
+    assert client.post("/api/players", headers={"X-Forwarded-For": "1.1.1.1"}).status_code == 429
+    assert client.post("/api/players", headers={"X-Forwarded-For": "2.2.2.2"}).status_code == 200
