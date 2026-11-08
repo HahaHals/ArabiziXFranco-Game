@@ -22,8 +22,14 @@ dependencies = [
 # Where the app object lives, for `fastapi run` and FastAPI Cloud.
 entrypoint = "app.main:app"
 
-[tool.uv]
-package = false  # an app, not a library to build
+# Hosts like FastAPI Cloud install the project itself; name its one code package
+# (migrations/ is read as plain files, not installed).
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
